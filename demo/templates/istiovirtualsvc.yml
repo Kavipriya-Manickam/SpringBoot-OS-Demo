@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Release.Name }}-virtual-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    component: ingress-virtual-service
+    app: {{ template "name" . }}
+    type: {{ template "name" . }}-core
+spec:
+  gateways:
+    - {{ .Release.Name }}-gateway
+  hosts:
+    - {{ .Values.istio.external_fqdn }}
+      {{- if $.Values.istio.rules }}
+{{ toYaml $.Values.istio.rules | indent 2 }}
+      {{- end -}}

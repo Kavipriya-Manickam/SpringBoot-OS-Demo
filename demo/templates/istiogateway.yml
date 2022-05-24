@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ .Release.Name }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    component: ingress-gateway
+    app: {{ template "name" . }}
+    type: {{ template "name" . }}-core
+spec:
+  selector:
+    istio: ingressgateway # use Istio default gateway implementation
+  servers:
+    - port:
+        number: 443
+        name: http2
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: {{ .Values.istio.credentialName }}
+      hosts:
+        - {{ .Values.istio.external_fqdn }}

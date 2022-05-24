@@ -1,60 +1,104 @@
-# Default values for demo.
+# Default values for chart.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+replicaCount: 3
+appPath: /apps/
+annotations:
+  GIT_URL: null
+  GIT_BRANCH: null
+  GIT_COMMIT: null
+  USER_NAME: null
+  APPLICATION_VERSION: null
+  sidecar: false
 
 image:
   repository: default-route-openshift-image-registry.apps.sandbox-m2.ll9k.p1.openshiftapps.com/kavi-dev/spring-boot-os-demo-git
+  tag: latest
+  pullSecret: regsecret
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  # for local development against Minikube registry
+  #pullPolicy: Never
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+# container:
+#   livenessProbe:
+#     path: /deployhealthcheck
+#     initialDelaySeconds: 60
+#     periodSeconds: 60
+#     timeoutSeconds: 30
+#   readinessProbe:
+#     path: /deployhealthcheck
+#     initialDelaySeconds: 60
+#     periodSeconds: 60
+#     timeoutSeconds: 30
+#   nodeSelector:
+#     worker-type: application
 
 service:
+  name: Demo-Open-Shift
   type: ClusterIP
-  port: 80
+  externalPort: 8080
+  internalPort: 8080
 
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+istio:
+  # Used to create an istio Ingress record.
+  external_fqdn: samplesubdomain.sampleapplication.dev.watson-health.ibm.com
+  # Used to define the rules in the ingress.yaml
+  rules:
+    http:
+      - match:
+          - uri:
+              prefix: /
+        route:
+          - destination:
+              # {{ .Values.service.name }}.{{ .Release.Namespace }}.svc.cluster.local
+              host: samplesvc.samplenamespace.svc.cluster.local
+              # {{ .Values.service.internalPort }}
+              port:
+                number: 8080
+  credentialName:
+    samplecredentialname
+# serviceAccount:
+#   # Specifies whether a service account should be created
+#   create: true
+#   # Annotations to add to the service account
+#   annotations: {}
+#   # The name of the service account to use.
+#   # If not set and create is true, a name is generated using the fullname template
+#   name: ""
+
+# podAnnotations: {}
+
+# podSecurityContext: {}
+#   # fsGroup: 2000
+
+# securityContext: {}
+#   # capabilities:
+#   #   drop:
+#   #   - ALL
+#   # readOnlyRootFilesystem: true
+#   # runAsNonRoot: true
+#   # runAsUser: 1000
+
+# service:
+#   type: ClusterIP
+#   port: 80
+
+# ingress:
+#   enabled: false
+#   className: ""
+#   annotations: {}
+#     # kubernetes.io/ingress.class: nginx
+#     # kubernetes.io/tls-acme: "true"
+#   hosts:
+#     - host: chart-example.local
+#       paths:
+#         - path: /
+#           pathType: ImplementationSpecific
+#   tls: []
+#   #  - secretName: chart-example-tls
+#   #    hosts:
+#   #      - chart-example.local
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -68,15 +112,15 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+# autoscaling:
+#   enabled: false
+#   minReplicas: 1
+#   maxReplicas: 100
+#   targetCPUUtilizationPercentage: 80
+#   # targetMemoryUtilizationPercentage: 80
 
-nodeSelector: {}
+# nodeSelector: {}
 
-tolerations: []
+# tolerations: []
 
-affinity: {}
+# affinity: {}
